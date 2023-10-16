@@ -56,8 +56,26 @@ pub trait Stack {
     /// Pushes an item to the stack.
     ///
     /// For vector, use [`Vec::push`] instead.
+    ///
+    /// ## Also see
+    ///
+    /// * [`Stack::s_push_checked`]
     // s_ prefix prevents name collision with Vec::push
     fn s_push(&mut self, item: Self::Item);
+
+    /// Pushes an item to the stack.
+    ///
+    /// ## Notes
+    ///
+    /// For vector, use [`Vec::push`] instead. It is meant primarily for the `heapless::Vec`.
+    ///
+    /// ## Also see
+    ///
+    /// * [`Stack::s_push`]
+    fn s_push_checked(&mut self, item: Self::Item) -> Option<()> {
+        self.s_push(item);
+        Some(())
+    }
 
     // we don't create chain push because Extend::extend_one API will be better
 
