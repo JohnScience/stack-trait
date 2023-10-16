@@ -6,6 +6,11 @@
 pub struct LIFOEntry<'a, C: ?Sized>(&'a mut C);
 
 impl<'a, C: ?Sized + Stack> LIFOEntry<'a, C> {
+    /// Creates a new "entry" object from the mutable reference to the container.
+    ///
+    /// ## Safety
+    ///
+    /// The stack must not be empty.
     pub unsafe fn new(stack: &'a mut C) -> Self {
         // SAFETY: The stack is not empty, so the call is safe.
         Self(stack)
@@ -80,6 +85,7 @@ pub trait Stack {
     /// ## Also see
     ///
     /// * [`Stack::s_pop`]
+    #[inline]
     unsafe fn s_pop_unchecked(&mut self) -> Self::Item {
         self.s_pop().unwrap_unchecked()
     }
@@ -94,11 +100,12 @@ pub trait Stack {
     /// ## Also see
     ///
     /// * [`Stack::lifo_unchecked`]
+    #[inline]
     fn lifo(&mut self) -> Option<LIFOEntry<Self>> {
         if self.s_is_empty() {
             None
         } else {
-            Some(LIFOEntry(self))
+            Some(unsafe { LIFOEntry::new(self) })
         }
     }
 
@@ -112,10 +119,19 @@ pub trait Stack {
     /// ## Also see
     ///
     /// * [`Stack::lifo`]
+    #[inline]
     unsafe fn lifo_unchecked(&mut self) -> LIFOEntry<Self> {
         self.lifo().unwrap_unchecked()
     }
 
+    /// Returns a shared reference to the top element of the stack.
+    ///
+    /// ## Also see
+    ///
+    /// * [`Stack::lifo_ref_unchecked`]
+    /// * [`Stack::lifo`]
+    /// * [`Stack::s_pop`]
+    /// * [`Stack::lifo_mut`]
     fn lifo_ref(&self) -> Option<&Self::Item>;
 
     /// Returns a shared reference to the top element of the stack without checking if the stack is empty.
@@ -127,6 +143,7 @@ pub trait Stack {
     /// ## Also see
     ///
     /// * [`Stack::lifo_ref`]
+    #[inline]
     unsafe fn lifo_ref_unchecked(&self) -> &Self::Item {
         self.lifo_ref().unwrap_unchecked()
     }
@@ -146,6 +163,7 @@ pub trait Stack {
     /// ## Safety
     ///
     /// The stack must not be empty.
+    #[inline]
     unsafe fn lifo_mut_unchecked(&mut self) -> &mut Self::Item {
         self.lifo_mut().unwrap_unchecked()
     }
@@ -154,34 +172,34 @@ pub trait Stack {
 impl<T> Stack for Vec<T> {
     type Item = T;
 
-    // #[inline]
+    #[inline]
     fn s_is_empty(&self) -> bool {
         self.is_empty()
     }
 
-    // #[inline]
+    #[inline]
     fn s_push(&mut self, item: Self::Item) {
         self.push(item);
     }
 
-    // #[inline]
+    #[inline]
     fn lifo_push(&mut self, item: Self::Item) -> LIFOEntry<Self> {
         self.push(item);
         // We just pushed to the vector, so the vector is not empty.
         unsafe { self.lifo_unchecked() }
     }
 
-    // #[inline]
+    #[inline]
     fn s_pop(&mut self) -> Option<Self::Item> {
         self.pop()
     }
 
-    // #[inline]
+    #[inline]
     fn lifo_ref(&self) -> Option<&Self::Item> {
         self.last()
     }
 
-    // #[inline]
+    #[inline]
     fn lifo_mut(&mut self) -> Option<&mut Self::Item> {
         self.last_mut()
     }
@@ -197,6 +215,7 @@ mod tests {
         let mut entry = stack.lifo_push(4);
         assert_eq!(*entry, 4);
         *entry = 5;
+        assert_eq!(*entry, 5);
         drop(entry);
         assert_eq!(stack, vec![1, 2, 3, 5]);
         let entry = stack.lifo().unwrap();
