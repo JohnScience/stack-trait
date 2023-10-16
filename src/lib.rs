@@ -6,6 +6,11 @@
 pub struct LIFOEntry<'a, C: ?Sized>(&'a mut C);
 
 impl<'a, C: ?Sized + Stack> LIFOEntry<'a, C> {
+    pub unsafe fn new(stack: &'a mut C) -> Self {
+        // SAFETY: The stack is not empty, so the call is safe.
+        Self(stack)
+    }
+
     /// Pops the LIFO element from the stack.
     pub fn pop(self) -> C::Item {
         let LIFOEntry(stack) = self;
@@ -13,8 +18,6 @@ impl<'a, C: ?Sized + Stack> LIFOEntry<'a, C> {
         // existence of the LIFOEntry object, so the call is safe.
         unsafe { stack.s_pop_unchecked() }
     }
-
-    pub fn release(self) {}
 }
 
 impl<'a, C: ?Sized + Stack> std::ops::Deref for LIFOEntry<'a, C> {
@@ -95,7 +98,7 @@ pub trait Stack {
         if self.s_is_empty() {
             None
         } else {
-            Some(unsafe { self.lifo_unchecked() })
+            Some(LIFOEntry(self))
         }
     }
 
@@ -194,7 +197,7 @@ mod tests {
         let mut entry = stack.lifo_push(4);
         assert_eq!(*entry, 4);
         *entry = 5;
-        entry.release();
+        drop(entry);
         assert_eq!(stack, vec![1, 2, 3, 5]);
         let entry = stack.lifo().unwrap();
         assert_eq!(entry.pop(), 5);
