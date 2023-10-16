@@ -38,7 +38,7 @@ fn main() {
     // optimized out by the compiler.
     let entry = stack.lifo().unwrap();
     // In addition, we can pop the element from the stack
-    assert_eq!(entry.pop(), 5);
+    assert_eq!(entry.pop_pointee(), 5);
     assert_eq!(stack, vec![1, 2, 3]);
 }
 ```

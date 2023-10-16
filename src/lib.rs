@@ -17,7 +17,7 @@ impl<'a, C: ?Sized + Stack> LIFOEntry<'a, C> {
     }
 
     /// Pops the LIFO element from the stack.
-    pub fn pop(self) -> C::Item {
+    pub fn pop_pointee(self) -> C::Item {
         let LIFOEntry(stack) = self;
         // SAFETY: The stack is not empty by the virtue of
         // existence of the LIFOEntry object, so the call is safe.
@@ -237,7 +237,7 @@ mod tests {
         drop(entry);
         assert_eq!(stack, vec![1, 2, 3, 5]);
         let entry = stack.lifo().unwrap();
-        assert_eq!(entry.pop(), 5);
+        assert_eq!(entry.pop_pointee(), 5);
         assert_eq!(stack, vec![1, 2, 3]);
     }
 }
