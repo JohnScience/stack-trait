@@ -1,3 +1,6 @@
+/// A convenience type alias that should be easier to read and understand.
+pub type LIFOVecEntry<'a, T> = LIFOEntry<'a, Vec<T>>;
+
 /// An "entry" object corresponding to the top element of the stack.
 ///
 /// Existence of this object guarantees that the stack is not empty.

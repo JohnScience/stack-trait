@@ -1,7 +1,7 @@
 [package]
 name = "stack-trait"
 edition = "2021"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Dmitrii Demenev <demenev.dmitriy1@gmail.com>"]
 description = "Stack trait with entry API for the LIFO element."
 documentation = "https://docs.rs/stack-trait"
